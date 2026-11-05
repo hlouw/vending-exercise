@@ -5,6 +5,7 @@ import { Grid } from "@/components/layout/Grid";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { CoinTray, type TrayOutcome } from "@/components/vending/CoinTray";
+import { CustomerBadge } from "@/components/vending/CustomerBadge";
 import { PaymentPanel } from "@/components/vending/PaymentPanel";
 import { StockPanel } from "@/components/vending/StockPanel";
 import { getStock, postPurchase } from "@/lib/api";
@@ -112,6 +113,8 @@ export function VendingMachine() {
       <CoinTray outcome={outcome} />
 
       <StockPanel stock={stock} />
+
+      <CustomerBadge />
     </Stack>
   );
 }

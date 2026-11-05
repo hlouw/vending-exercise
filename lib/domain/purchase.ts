@@ -42,6 +42,7 @@ export function purchase(
       changeTotal: totalOf(change),
     },
     next: {
+      ...state,
       supply: withdraw(state.supply, change),
       cashBox: state.cashBox + amountPaid,
     },

@@ -12,7 +12,12 @@ vi.mock("next/server", () => ({ connection: async () => {} }));
 beforeEach(() => {
   getStore().transact((state) => ({
     result: undefined,
-    next: { ...state, supply: initialSupply(), cashBox: 0 },
+    next: {
+      ...state,
+      supply: initialSupply(),
+      cashBox: 0,
+      attempts: new Map(),
+    },
   }));
 });
 

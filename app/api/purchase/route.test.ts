@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { COINS, initialSupply } from "@/lib/domain/coins";
+import type { MachineState } from "@/lib/domain/types";
 import { POST } from "@/app/api/purchase/route";
 import { getStore } from "@/lib/store";
 
@@ -18,11 +19,25 @@ const asCustomer = { "X-Customer-Id": "customer-1" };
 function resetMachine(supply = initialSupply()) {
   getStore().transact((state) => ({
     result: undefined,
-    next: { ...state, supply, cashBox: 0 },
+    next: { ...state, supply, cashBox: 0, attempts: new Map() },
   }));
 }
 
-beforeEach(() => resetMachine());
+/** A refused request still counts as an attempt, but moves no money. */
+function expectMoneyUnchanged(before: MachineState) {
+  const after = getStore().read();
+  expect(after.supply).toBe(before.supply);
+  expect(after.cashBox).toBe(before.cashBox);
+}
+
+beforeEach(() => {
+  resetMachine();
+  // The route reads the clock itself, so pin it.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(1_000_000);
+});
+
+afterEach(() => vi.useRealTimers());
 
 describe("POST /api/purchase", () => {
   it("dispenses on exact payment and adds to the cash box only", async () => {
@@ -48,7 +63,7 @@ describe("POST /api/purchase", () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ status: "unauthorized" });
-    expect(getStore().read()).toBe(before);
+    expectMoneyUnchanged(before);
   });
 
   it("returns 401 for an invalid customer header", async () => {
@@ -70,7 +85,7 @@ describe("POST /api/purchase", () => {
 
     expect(response.status).toBe(400);
     expect((await response.json()).status).toBe("invalid");
-    expect(getStore().read()).toBe(before);
+    expectMoneyUnchanged(before);
   });
 
   it("returns the fewest coins as change and takes them from the supply", async () => {
@@ -97,7 +112,7 @@ describe("POST /api/purchase", () => {
       status: "refused",
       reason: "INSUFFICIENT_PAYMENT",
     });
-    expect(getStore().read()).toBe(before);
+    expectMoneyUnchanged(before);
   });
 
   it("refuses when exact change cannot be made with 422 and changes nothing", async () => {
@@ -114,6 +129,97 @@ describe("POST /api/purchase", () => {
       status: "refused",
       reason: "CANNOT_MAKE_CHANGE",
     });
-    expect(getStore().read()).toBe(before);
+    expectMoneyUnchanged(before);
+  });
+});
+
+describe("POST /api/purchase rate limiting", () => {
+  const valid = { price: 65, amountPaid: 65 };
+
+  it("allows three purchases then turns the fourth away with 429", async () => {
+    for (let i = 0; i < 3; i++) {
+      expect((await post(valid, asCustomer)).status).toBe(200);
+    }
+
+    const response = await post(valid, asCustomer);
+
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({
+      status: "rate_limited",
+      retryAfterMs: 3000,
+    });
+    expect(response.headers.get("Retry-After")).toBe("3");
+  });
+
+  it("lets the Customer back in once the oldest attempt has left the window", async () => {
+    for (let i = 0; i < 3; i++) await post(valid, asCustomer);
+    expect((await post(valid, asCustomer)).status).toBe(429);
+
+    vi.setSystemTime(1_000_000 + 2999);
+    expect((await post(valid, asCustomer)).status).toBe(429);
+
+    vi.setSystemTime(1_000_000 + 3000);
+    expect((await post(valid, asCustomer)).status).toBe(200);
+  });
+
+  it("keeps each Customer's limit independent", async () => {
+    for (let i = 0; i < 3; i++) await post(valid, asCustomer);
+    expect((await post(valid, asCustomer)).status).toBe(429);
+
+    const other = await post(valid, { "X-Customer-Id": "customer-2" });
+
+    expect(other.status).toBe(200);
+  });
+
+  it("turns the fourth attempt away before looking at the body", async () => {
+    // Malformed attempts count, and the limiter runs before validation.
+    for (let i = 0; i < 3; i++) {
+      expect((await post({ price: 0.5 }, asCustomer)).status).toBe(400);
+    }
+
+    const response = await post({ price: 0.5 }, asCustomer);
+
+    expect(response.status).toBe(429);
+  });
+
+  it("counts refused purchases too", async () => {
+    for (let i = 0; i < 3; i++) {
+      expect(
+        (await post({ price: 100, amountPaid: 1 }, asCustomer)).status,
+      ).toBe(422);
+    }
+
+    expect((await post(valid, asCustomer)).status).toBe(429);
+  });
+
+  it("does not extend the wait when a blocked Customer keeps trying", async () => {
+    for (let i = 0; i < 3; i++) await post(valid, asCustomer);
+
+    for (let i = 0; i < 5; i++) {
+      vi.setSystemTime(1_000_000 + 500 * (i + 1));
+      expect((await post(valid, asCustomer)).status).toBe(429);
+    }
+
+    vi.setSystemTime(1_000_000 + 3000);
+    expect((await post(valid, asCustomer)).status).toBe(200);
+  });
+
+  it("does not touch the Coin Supply or Cash Box when rate limited", async () => {
+    for (let i = 0; i < 3; i++) await post(valid, asCustomer);
+    const before = getStore().read();
+
+    await post({ price: 65, amountPaid: 200 }, asCustomer);
+
+    const after = getStore().read();
+    expect(after.supply).toBe(before.supply);
+    expect(after.cashBox).toBe(before.cashBox);
+  });
+
+  it("does not count requests that fail identity", async () => {
+    for (let i = 0; i < 5; i++) {
+      expect((await post(valid)).status).toBe(401);
+    }
+
+    expect((await post(valid, asCustomer)).status).toBe(200);
   });
 });

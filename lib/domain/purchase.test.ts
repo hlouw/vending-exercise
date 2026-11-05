@@ -3,7 +3,11 @@ import { COINS, initialSupply, type CoinCounts } from "@/lib/domain/coins";
 import { purchase } from "@/lib/domain/purchase";
 import type { MachineState } from "@/lib/domain/types";
 
-const fresh = (): MachineState => ({ supply: initialSupply(), cashBox: 0 });
+const fresh = (): MachineState => ({
+  supply: initialSupply(),
+  cashBox: 0,
+  attempts: new Map(),
+});
 
 function supplyOf(counts: Partial<CoinCounts>): CoinCounts {
   return Object.fromEntries(
@@ -56,7 +60,11 @@ describe("purchase", () => {
   });
 
   it("refuses when change cannot be made and leaves the state untouched", () => {
-    const state: MachineState = { supply: supplyOf({ 2: 10 }), cashBox: 40 };
+    const state: MachineState = {
+      ...fresh(),
+      supply: supplyOf({ 2: 10 }),
+      cashBox: 40,
+    };
     const { outcome, next } = purchase(state, { price: 99, amountPaid: 100 });
 
     expect(outcome).toEqual({

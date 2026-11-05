@@ -34,6 +34,10 @@ export const PurchaseResponseSchema = z.discriminatedUnion("status", [
     status: z.literal("refused"),
     reason: z.enum(["INSUFFICIENT_PAYMENT", "CANNOT_MAKE_CHANGE"]),
   }),
+  z.object({
+    status: z.literal("rate_limited"),
+    retryAfterMs: z.int().positive(),
+  }),
   z.object({ status: z.literal("invalid"), issues: z.array(z.string()) }),
   z.object({ status: z.literal("unauthorized") }),
 ]);

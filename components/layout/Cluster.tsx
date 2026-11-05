@@ -10,7 +10,11 @@ const cluster = cva("flex flex-wrap", {
       center: "justify-center",
       between: "justify-between",
     },
-    align: { start: "items-start", center: "items-center" },
+    align: {
+      start: "items-start",
+      center: "items-center",
+      end: "items-end",
+    },
   },
   defaultVariants: { gap: "md", justify: "start", align: "center" },
 });

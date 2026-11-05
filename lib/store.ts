@@ -16,7 +16,11 @@ export interface MachineStore {
 }
 
 export function createMemoryStore(): MachineStore {
-  let state: MachineState = { supply: initialSupply(), cashBox: 0 };
+  let state: MachineState = {
+    supply: initialSupply(),
+    cashBox: 0,
+    attempts: new Map(),
+  };
   return {
     transact(fn) {
       const { result, next } = fn(state);

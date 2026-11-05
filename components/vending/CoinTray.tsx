@@ -68,6 +68,19 @@ function Message({ outcome }: { outcome: TrayOutcome }) {
           <p>You keep your money.</p>
         </>
       );
+    case "rate_limited": {
+      const seconds = Math.ceil(response.retryAfterMs / 1000);
+      return (
+        <>
+          <p className="font-medium">Slow down!</p>
+          <p>
+            You&apos;ve made too many purchases. Try again in {seconds}{" "}
+            {seconds === 1 ? "second" : "seconds"}.
+          </p>
+          <p>You keep your money.</p>
+        </>
+      );
+    }
     case "invalid":
       return (
         <p>That request wasn&apos;t valid: {response.issues.join(", ")}</p>
