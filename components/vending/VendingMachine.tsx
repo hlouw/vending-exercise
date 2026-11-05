@@ -1,48 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { Cluster } from "@/components/layout/Cluster";
 import { Grid } from "@/components/layout/Grid";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
+import { CoinTray, type TrayOutcome } from "@/components/vending/CoinTray";
+import { PaymentPanel } from "@/components/vending/PaymentPanel";
 import { postPurchase } from "@/lib/api";
 import { CATALOGUE, type Item } from "@/lib/catalogue";
-import { formatPence } from "@/lib/format";
+import { formatPence, parsePounds } from "@/lib/format";
 import { getCustomerId } from "@/lib/identity";
-import type { PurchaseResponse } from "@/lib/schemas";
-
-function describe(item: Item, outcome: PurchaseResponse): string {
-  switch (outcome.status) {
-    case "dispensed":
-      return `${item.name} dispensed. No change.`;
-    case "refused":
-      return `Refused: ${outcome.reason}`;
-    case "invalid":
-      return `Invalid request: ${outcome.issues.join(", ")}`;
-    case "unauthorized":
-      return "Unauthorised.";
-  }
-}
+import { MAX_PENCE } from "@/lib/schemas";
 
 export function VendingMachine() {
   const [selected, setSelected] = useState<Item | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [amountText, setAmountText] = useState("");
+  const [outcome, setOutcome] = useState<TrayOutcome | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Exact payment only for now: the Amount Paid is the Price.
-  const amountPaid = selected?.price ?? 0;
+  const parsed = parsePounds(amountText);
+  const amountPaid =
+    parsed !== null && parsed >= 1 && parsed <= MAX_PENCE ? parsed : null;
+  const canBuy = selected !== null && amountPaid !== null && !busy;
 
   async function buy() {
-    if (!selected) return;
+    if (!selected || amountPaid === null) return;
     setBusy(true);
     try {
-      const outcome = await postPurchase(getCustomerId(), {
+      const response = await postPurchase(getCustomerId(), {
         price: selected.price,
         amountPaid,
       });
-      setMessage(describe(selected, outcome));
+      setOutcome({ kind: "response", itemName: selected.name, response });
+      // A Refusal means the Customer keeps their money, so keep the amount
+      // they entered. Once dispensed, the money has been spent.
+      if (response.status === "dispensed") setAmountText("");
     } catch {
-      setMessage("Something went wrong. Please try again.");
+      setOutcome({ kind: "error" });
     } finally {
       setBusy(false);
     }
@@ -61,7 +55,7 @@ export function VendingMachine() {
             selected={selected?.id === item.id}
             onClick={() => {
               setSelected(item);
-              setMessage(null);
+              setOutcome(null);
             }}
           >
             <Stack gap="sm">
@@ -74,19 +68,22 @@ export function VendingMachine() {
         ))}
       </Grid>
 
-      <Cluster justify="between">
-        <Stack gap="sm">
-          <span>Price: {selected ? formatPence(selected.price) : "–"}</span>
-          <span>Paying: {selected ? formatPence(amountPaid) : "–"}</span>
-        </Stack>
-        <Button onClick={buy} disabled={!selected || busy}>
-          {busy ? "Buying…" : "Buy"}
-        </Button>
-      </Cluster>
+      <PaymentPanel
+        price={selected?.price ?? null}
+        amountText={amountText}
+        amountPaid={amountPaid}
+        onAmountTextChange={setAmountText}
+        onQuickAdd={(pence) =>
+          setAmountText(((parsed ?? 0) + pence) / 100 + "")
+        }
+        onClear={() => setAmountText("")}
+      />
 
-      <p role="status" aria-live="polite" className="min-h-6">
-        {message}
-      </p>
+      <Button onClick={buy} disabled={!canBuy}>
+        {busy ? "Buying…" : "Buy"}
+      </Button>
+
+      <CoinTray outcome={outcome} />
     </Stack>
   );
 }
