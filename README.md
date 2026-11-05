@@ -102,9 +102,9 @@ The unit tests compare it against an exhaustive brute-force search on randomly g
 
 The brief is a self-contained exercise, so storage and identity are deliberately simple, but each sits behind one small seam.
 
-- **Store** (`lib/store.ts`): `MachineStore.transact(fn)` is the only way to change state. `fn` is synchronous, and it computes the next state and commits it in one step. The domain logic (`lib/domain/`) is pure, with no Zod, HTTP or storage. A database-backed store would wrap `transact` in a real transaction without callers changing. Note that the rate limiter and the purchase are two separate `transact` calls, which is fine because the limiter's record doesn't depend on the Purchase outcome.
+- **Store** (`lib/server/store.ts`): `MachineStore.transact(fn)` is the only way to change state. `fn` is synchronous, and it computes the next state and commits it in one step. The domain logic (`lib/domain/`) is pure, with no Zod, HTTP or storage. A database-backed store would wrap `transact` in a real transaction without callers changing. Note that the rate limiter and the purchase are two separate `transact` calls, which is fine because the limiter's record doesn't depend on the Purchase outcome.
 - **Server identity** (`lib/server/resolveCustomer.ts`): the only place the server learns who a Customer is. Today it validates the `X-Customer-Id` header. A real login would read a session cookie or bearer token here.
-- **Client identity** (`lib/identity.ts`): the only place the browser produces a Customer Identity. It generates a UUID, keeps it in `localStorage`, and lets you switch to another valid ID from the UI. A fake-login flow with user-selected IDs would replace this module and nothing else.
+- **Client identity** (`lib/client/identity.ts`): the only place the browser produces a Customer Identity. It generates a UUID, keeps it in `localStorage`, and lets you switch to another valid ID from the UI. A fake-login flow with user-selected IDs would replace this module and nothing else.
 - **Validation**: Zod schemas in `lib/schemas.ts` are shared by client and server, and all external data is parsed with them (header, body, the stored client ID, and API responses on the client).
 - **Time**: the limiter takes `now` as a parameter, so its tests need no fake timers. The route supplies `Date.now()`.
 
@@ -138,12 +138,15 @@ What was verified, and how:
 
 ```
 app/api/purchase, app/api/stock   thin route handlers
-lib/domain/                       pure rules: coins, change, purchase, rate limit
-lib/store.ts                      the transaction seam
+lib/domain/                       pure rules: coins, change, purchase, rate limit (shared)
 lib/schemas.ts                    Zod schemas shared by client and server
-lib/server/resolveCustomer.ts     server-side identity
-lib/identity.ts                   client-side identity
+lib/server/                       server-only (guarded by `import "server-only"`):
+                                  store, vending, resolveCustomer
+lib/client/                       browser-only: api, identity, useCustomerId
+lib/*.ts                          small shared helpers: format, cn, catalogue, identity-header
 components/layout/                Every Layout primitives: Stack, Cluster, Grid, Center, Sidebar, Box
 components/ui/                    Button, Input, CoinChip (cva variants)
 components/vending/               the machine itself
 ```
+
+`lib/server/` modules import `server-only`, so importing one from a Client Component fails the build instead of silently shipping a second, private machine to the browser. `lib/client/` is organisational only; nothing is enforced there.

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { COINS, initialSupply } from "@/lib/domain/coins";
 import type { MachineState } from "@/lib/domain/types";
 import { POST } from "@/app/api/purchase/route";
-import { getStore } from "@/lib/store";
+import { getStore } from "@/lib/server/store";
 
 function post(body: unknown, headers: Record<string, string> = {}) {
   return POST(

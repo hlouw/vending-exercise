@@ -10,10 +10,10 @@ import { CustomerBadge } from "@/components/vending/CustomerBadge";
 import { ItemGrid } from "@/components/vending/ItemGrid";
 import { PaymentPanel } from "@/components/vending/PaymentPanel";
 import { StockPanel } from "@/components/vending/StockPanel";
-import { getStock, postPurchase } from "@/lib/api";
+import { getStock, postPurchase } from "@/lib/client/api";
 import type { Item } from "@/lib/catalogue";
 import { parsePounds } from "@/lib/format";
-import { getCustomerId } from "@/lib/identity";
+import { getCustomerId } from "@/lib/client/identity";
 import { MAX_PENCE, type StockResponse } from "@/lib/schemas";
 
 export function VendingMachine() {

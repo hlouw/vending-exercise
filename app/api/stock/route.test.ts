@@ -3,7 +3,7 @@ import { GET } from "@/app/api/stock/route";
 import { POST } from "@/app/api/purchase/route";
 import { COINS, initialSupply } from "@/lib/domain/coins";
 import { StockResponseSchema } from "@/lib/schemas";
-import { getStore } from "@/lib/store";
+import { getStore } from "@/lib/server/store";
 
 // `connection()` only works inside a real Next request. Whether the route is
 // really dynamic is checked against a production build, not here.

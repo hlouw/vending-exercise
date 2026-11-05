@@ -1,3 +1,5 @@
+import "server-only";
+
 import { CUSTOMER_ID_HEADER } from "@/lib/identity-header";
 import { CustomerIdSchema } from "@/lib/schemas";
 

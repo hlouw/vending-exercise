@@ -5,8 +5,8 @@ import { Cluster } from "@/components/layout/Cluster";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { setCustomerId } from "@/lib/identity";
-import { useCustomerId } from "@/lib/useCustomerId";
+import { setCustomerId } from "@/lib/client/identity";
+import { useCustomerId } from "@/lib/client/useCustomerId";
 
 /** Shows who the machine thinks you are, and lets you become someone else. */
 export function CustomerBadge() {

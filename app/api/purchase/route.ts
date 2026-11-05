@@ -1,7 +1,7 @@
 import { PurchaseRequestSchema } from "@/lib/schemas";
 import { resolveCustomer } from "@/lib/server/resolveCustomer";
-import { getStore } from "@/lib/store";
-import { attemptPurchase, registerAttempt } from "@/lib/vending";
+import { getStore } from "@/lib/server/store";
+import { attemptPurchase, registerAttempt } from "@/lib/server/vending";
 
 export async function POST(request: Request) {
   const customer = resolveCustomer(request);

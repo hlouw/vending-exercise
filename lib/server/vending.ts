@@ -1,7 +1,9 @@
+import "server-only";
+
 import { purchase, type PurchaseOutcome } from "@/lib/domain/purchase";
 import { checkRateLimit, RATE_LIMIT } from "@/lib/domain/rateLimit";
 import type { PurchaseRequest } from "@/lib/schemas";
-import type { MachineStore } from "@/lib/store";
+import type { MachineStore } from "@/lib/server/store";
 
 /** Beyond this many remembered Customers, forget the ones outside the window. */
 const SWEEP_THRESHOLD = 1000;

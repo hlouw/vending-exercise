@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { getCustomerId, subscribeCustomerId } from "@/lib/identity";
+import { getCustomerId, subscribeCustomerId } from "@/lib/client/identity";
 
 /** The current Customer Identity, or "" while rendering on the server. */
 export function useCustomerId(): string {

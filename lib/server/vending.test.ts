@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createMemoryStore } from "@/lib/store";
-import { attemptPurchase, registerAttempt } from "@/lib/vending";
+import { createMemoryStore } from "@/lib/server/store";
+import { attemptPurchase, registerAttempt } from "@/lib/server/vending";
 
 describe("registerAttempt", () => {
   it("blocks a Customer's fourth attempt but not another Customer's", () => {

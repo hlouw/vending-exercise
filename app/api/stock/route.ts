@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { getStore } from "@/lib/store";
+import { getStore } from "@/lib/server/store";
 
 export async function GET() {
   // Cache Components prerenders a GET handler that reads no request data.

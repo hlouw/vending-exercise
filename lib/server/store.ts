@@ -1,3 +1,5 @@
+import "server-only";
+
 import { initialSupply } from "@/lib/domain/coins";
 import type { MachineState } from "@/lib/domain/types";
 
