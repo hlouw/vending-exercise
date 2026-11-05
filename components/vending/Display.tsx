@@ -9,8 +9,8 @@ const NONE = "--.--";
 function Row({ label, pence }: { label: string; pence: number | null }) {
   return (
     <Cluster justify="between" gap="sm">
-      <span className="text-sm tracking-widest uppercase">{label}</span>
-      <span className="text-2xl tabular-nums">
+      <span className="text-xs tracking-widest uppercase">{label}</span>
+      <span className="text-lg tabular-nums">
         {pence === null ? NONE : formatPence(pence)}
       </span>
     </Cluster>
@@ -26,8 +26,8 @@ export function Display({
   amountPaid: number | null;
 }) {
   return (
-    <Box tone="display" aria-label="Display" role="group">
-      <Stack gap="sm">
+    <Box tone="display" padding="sm" aria-label="Display" role="group">
+      <Stack gap="xs">
         <Row label="Price" pence={price} />
         <Row label="Paying" pence={amountPaid} />
       </Stack>

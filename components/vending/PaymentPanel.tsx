@@ -1,4 +1,4 @@
-import { Cluster } from "@/components/layout/Cluster";
+import { Grid } from "@/components/layout/Grid";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -44,12 +44,12 @@ export function PaymentPanel({
         if (canBuy) onBuy();
       }}
     >
-      <Stack gap="md">
-        <h2 className="text-lg font-semibold">Pay</h2>
+      <Stack gap="sm">
+        <h2 className="text-sm font-semibold">Pay</h2>
         <Display price={price} amountPaid={amountPaid} />
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm">Amount paid (£)</span>
+          <span className="text-xs text-muted">Amount paid (£)</span>
           <Input
             inputMode="decimal"
             value={amountText}
@@ -64,8 +64,8 @@ export function PaymentPanel({
         <p
           id="amount-help"
           className={cn(
-            "min-h-5 text-sm",
-            invalid ? "text-amber-300" : "text-machine-trim",
+            "min-h-4 text-xs",
+            invalid ? "text-warning" : "text-muted",
           )}
         >
           {invalid
@@ -75,23 +75,24 @@ export function PaymentPanel({
               : ""}
         </p>
 
-        <Cluster gap="sm">
+        <Grid columns={3} gap="sm">
           {QUICK_ADD.map((pence) => (
             <Button
               key={pence}
-              variant="coin"
+              variant="secondary"
+              size="sm"
               onClick={() => onQuickAdd(pence)}
               aria-label={`Add ${formatPence(pence)}`}
             >
               +£{pence / 100}
             </Button>
           ))}
-          <Button variant="coin" onClick={onClear}>
+          <Button variant="secondary" size="sm" onClick={onClear}>
             Clear
           </Button>
-        </Cluster>
+        </Grid>
 
-        <Button type="submit" size="xl" disabled={!canBuy}>
+        <Button type="submit" size="lg" disabled={!canBuy}>
           {busy ? "Buying…" : "Buy"}
         </Button>
       </Stack>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 export function Center({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("mx-auto w-full max-w-5xl px-4", className)}
+      className={cn("mx-auto w-full max-w-4xl px-4", className)}
       {...props}
     />
   );

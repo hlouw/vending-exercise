@@ -5,17 +5,17 @@ import type { Coin } from "@/lib/domain/coins";
 import { formatCoin } from "@/lib/format";
 
 const coinChip = cva(
-  "inline-flex shrink-0 items-center justify-center rounded-full font-semibold tabular-nums shadow-md ring-2 ring-inset",
+  "inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-ink tabular-nums ring-inset",
   {
     variants: {
       metal: {
-        copper: "bg-copper text-white ring-orange-300/60",
-        silver: "bg-silver text-zinc-900 ring-white/70",
-        gold: "bg-gold text-zinc-900 ring-yellow-200/80",
+        copper: "bg-copper ring-1 ring-copper-edge",
+        silver: "bg-silver ring-1 ring-silver-edge",
+        gold: "bg-gold ring-1 ring-gold-edge",
         // £2: a gold ring around a silver centre.
-        bimetal: "bg-silver text-zinc-900 ring-4 ring-gold",
+        bimetal: "bg-silver ring-3 ring-gold-edge",
       },
-      size: { sm: "size-9 text-xs", md: "size-12 text-sm" },
+      size: { sm: "size-8 text-[0.6875rem]", md: "size-10 text-xs" },
       empty: { true: "opacity-40 grayscale", false: "" },
     },
     defaultVariants: { metal: "silver", size: "md", empty: false },

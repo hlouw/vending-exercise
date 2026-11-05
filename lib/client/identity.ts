@@ -23,17 +23,17 @@ export function getCustomerId(): string {
   return generated;
 }
 
-/** Switch identity. Anything the server would reject is refused here too. */
-export function setCustomerId(
-  candidate: string,
-): { ok: true } | { ok: false; error: string } {
+/**
+ * Switch identity. Returns false, changing nothing, for anything the server
+ * would reject.
+ */
+export function setCustomerId(candidate: string): boolean {
   const parsed = CustomerIdSchema.safeParse(candidate);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0].message };
-  }
+  if (!parsed.success) return false;
+
   window.localStorage.setItem(STORAGE_KEY, parsed.data);
   listeners.forEach((listener) => listener());
-  return { ok: true };
+  return true;
 }
 
 /** For `useSyncExternalStore`. Also follows changes made in other tabs. */

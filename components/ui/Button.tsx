@@ -3,21 +3,20 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/cn";
 
 const button = cva(
-  "rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 disabled:cursor-not-allowed disabled:opacity-50",
+  "rounded-md font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
-        /** The one big action: Buy. */
-        primary:
-          "bg-emerald-500 font-semibold text-emerald-950 shadow-md hover:bg-emerald-400 active:translate-y-px",
+        /** The one main action: Buy. */
+        primary: "bg-accent font-semibold text-white hover:bg-accent-hover",
         /** A product slot in the glass. */
-        item: "bg-zinc-100/95 text-left text-zinc-900 shadow hover:bg-white",
-        /** Quick-add and other small controls on the panel. */
-        coin: "border border-machine-trim/50 bg-machine-dark text-white hover:bg-machine",
+        item: "border border-panel-line bg-panel text-left hover:border-accent",
+        /** Quick-add and other small controls. */
+        secondary: "border border-cabinet-line bg-panel hover:border-accent",
       },
-      size: { md: "px-4 py-2", lg: "px-4 py-3", xl: "px-6 py-4 text-lg" },
+      size: { sm: "px-2 py-1 text-sm", md: "px-3 py-2", lg: "px-4 py-2.5" },
       selected: {
-        true: "ring-4 ring-amber-300",
+        true: "border-accent ring-2 ring-accent",
         false: "",
       },
     },

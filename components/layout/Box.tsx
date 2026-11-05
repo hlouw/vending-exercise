@@ -2,16 +2,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/cn";
 
-const box = cva("rounded-xl", {
+const box = cva("rounded-lg", {
   variants: {
-    padding: { sm: "p-3", md: "p-4", lg: "p-6" },
+    padding: { sm: "p-3", md: "p-4" },
     tone: {
       plain: "",
-      body: "bg-machine text-white shadow-xl ring-1 ring-machine-dark",
-      glass: "bg-glass/90 ring-4 ring-zinc-300/40 ring-inset",
-      display: "bg-display font-mono text-display-text ring-2 ring-black/60",
-      tray: "bg-tray text-zinc-100 shadow-inner ring-2 ring-black",
-      panel: "bg-machine-dark/70 text-white ring-1 ring-machine-trim/30",
+      body: "bg-cabinet ring-1 ring-cabinet-line",
+      glass: "bg-glass ring-1 ring-glass-line",
+      display: "bg-display font-mono text-display-text",
+      tray: "bg-tray ring-1 ring-cabinet-line",
+      panel: "bg-panel ring-1 ring-panel-line",
     },
   },
   defaultVariants: { padding: "md", tone: "plain" },

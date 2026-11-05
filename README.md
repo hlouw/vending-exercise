@@ -121,10 +121,10 @@ The brief is a self-contained exercise, so storage and identity are deliberately
 
 This was built with Claude Code. The process, in order:
 
-1. **Requirements grilling** before any code: Item catalogue versus free-form price, integer pence, identity, the change algorithm, storage, rate-limit semantics, atomicity, testing and the response shape. The answers became `GLOSSARY.md` and a set of vertical-slice tickets. 
+1. **Requirements grilling** before any code: Item catalogue versus free-form price, integer pence, identity, the change algorithm, storage, rate-limit semantics, atomicity, testing and the response shape. The answers became `GLOSSARY.md` and a set of vertical-slice tickets.
 2. Additional guidance was given to create and use design layout primitives from the start and to use Zod.
-2. **Seven small tickets**, each reviewed and committed separately: tooling, an exact-payment tracer bullet through every layer, change and Refusals, live stock, rate limiting, visual design, and this README.
-3. **Review changed the design.** Examples: body validation moved into the route so `attemptPurchase` only deals with domain logic, the rate limiter moved to the route level, and the brute-force test uses `Math.random()` with the failing inputs in the assertion message.
+3. **Seven small tickets**, each reviewed and committed separately: tooling, an exact-payment tracer bullet through every layer, change and Refusals, live stock, rate limiting, visual design, and this README.
+4. **Review changed the design.** Examples: body validation moved into the route so `attemptPurchase` only deals with domain logic, the rate limiter moved to the route level, and the brute-force test uses `Math.random()` with the failing inputs in the assertion message.
 
 What was verified, and how:
 
@@ -132,7 +132,7 @@ What was verified, and how:
 - **Production build**: with Cache Components on, a `GET` that reads no request data is prerendered. Building `/api/stock` without `await connection()` showed it as static, which would serve frozen stock, so it opts out and the build shows it as dynamic.
 - **Real server**: curl against `next start` for every status code, including a drained machine returning `CANNOT_MAKE_CHANGE`.
 - **Real browser** (headless Chromium): selecting, paying, each outcome, rate limiting, switching identity, a keyboard-only purchase, reduced motion, and no horizontal overflow at phone width. That pass found two real bugs: a layout overflow at 375 px, and the coin animation ignoring reduced motion.
-- **Not verified**: dark-mode appearance, browsers other than Chromium, and real screen-reader use.
+- **Not verified**: browsers other than Chromium, and real screen-reader use. The design is a single light theme.
 - **Corrected along the way**: an early example of a case where greedy fails (30p) was wrong, since greedy handles it. The 6p case above is the real one.
 
 ## Layout
@@ -145,7 +145,7 @@ lib/server/                       server-only (guarded by `import "server-only"`
                                   store, vending, resolveCustomer
 lib/client/                       browser-only: api, identity, useCustomerId
 lib/*.ts                          small shared helpers: format, cn, catalogue, identity-header
-components/layout/                Every Layout primitives: Stack, Cluster, Grid, Center, Sidebar, Box
+components/layout/                Every Layout primitives: Stack, Cluster, Grid, Center, Box
 components/ui/                    Button, Input, CoinChip (cva variants)
 components/vending/               the machine itself
 ```

@@ -1,13 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box } from "@/components/layout/Box";
 import { Center } from "@/components/layout/Center";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Cluster } from "@/components/layout/Cluster";
 import { Stack } from "@/components/layout/Stack";
-import { CoinTray, type TrayOutcome } from "@/components/vending/CoinTray";
+import { CoinTray } from "@/components/vending/CoinTray";
 import { CustomerBadge } from "@/components/vending/CustomerBadge";
 import { ItemGrid } from "@/components/vending/ItemGrid";
+import {
+  changeCoinsOf,
+  OutcomeMessage,
+  type DisplayedOutcome,
+} from "@/components/vending/OutcomeMessage";
 import { PaymentPanel } from "@/components/vending/PaymentPanel";
 import { StockPanel } from "@/components/vending/StockPanel";
 import { getStock, postPurchase } from "@/lib/client/api";
@@ -19,9 +24,16 @@ import { MAX_PENCE, type StockResponse } from "@/lib/schemas";
 export function VendingMachine() {
   const [selected, setSelected] = useState<Item | null>(null);
   const [amountText, setAmountText] = useState("");
-  const [outcome, setOutcome] = useState<TrayOutcome | null>(null);
+  const [outcome, setOutcome] = useState<DisplayedOutcome | null>(null);
   const [busy, setBusy] = useState(false);
   const [stock, setStock] = useState<StockResponse | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  // On a small screen the result can be below the fold when Buy is pressed.
+  // "nearest" does nothing when it is already fully visible.
+  useEffect(() => {
+    if (outcome) resultRef.current?.scrollIntoView({ block: "nearest" });
+  }, [outcome]);
 
   const refreshStock = useCallback(async () => {
     try {
@@ -72,30 +84,43 @@ export function VendingMachine() {
   }
 
   return (
-    <Center className="py-6">
-      <Box tone="body" padding="lg">
-        <Stack gap="lg">
-          <header>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Vending machine
-            </h1>
-            <p className="text-machine-trim">
-              Pick an item, pay, and get your change.
-            </p>
-          </header>
+    <Center className="py-4">
+      <Box tone="body">
+        <Stack gap="md">
+          <Cluster justify="between" align="end" gap="sm">
+            <h1 className="text-xl font-semibold">Vending machine</h1>
+            <CustomerBadge />
+          </Cluster>
 
-          <Sidebar sidebarWidth="19rem">
-            <Box tone="glass" padding="lg">
-              <ItemGrid
-                selectedId={selected?.id ?? null}
-                onSelect={(item) => {
-                  setSelected(item);
-                  setOutcome(null);
-                }}
-              />
-            </Box>
-            <Stack gap="md">
-              <Box tone="panel">
+          {/*
+            Two columns from md up. Below that the column wrappers dissolve and
+            the panels are reordered, so the result sits right under Buy, where
+            the Customer is looking when the Outcome appears.
+          */}
+          <div className="flex flex-col gap-3 md:flex-row">
+            <div className="flex flex-col gap-3 max-md:contents md:min-w-0 md:flex-1">
+              <Box tone="glass" padding="sm" className="max-md:order-1">
+                <ItemGrid
+                  selectedId={selected?.id ?? null}
+                  onSelect={(item) => {
+                    setSelected(item);
+                    setOutcome(null);
+                  }}
+                />
+              </Box>
+              <div
+                ref={resultRef}
+                className="flex flex-col gap-3 max-md:order-3 md:flex-1"
+              >
+                <OutcomeMessage outcome={outcome} />
+                <CoinTray
+                  change={changeCoinsOf(outcome)}
+                  className="md:flex-1"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 max-md:contents md:w-64 md:shrink-0">
+              <Box tone="panel" padding="sm" className="max-md:order-2">
                 <PaymentPanel
                   price={selected?.price ?? null}
                   amountText={amountText}
@@ -110,17 +135,11 @@ export function VendingMachine() {
                   onBuy={buy}
                 />
               </Box>
-              <Box tone="panel">
+              <Box tone="panel" padding="sm" className="max-md:order-4">
                 <StockPanel stock={stock} />
               </Box>
-            </Stack>
-          </Sidebar>
-
-          <CoinTray outcome={outcome} />
-
-          <Box tone="panel">
-            <CustomerBadge />
-          </Box>
+            </div>
+          </div>
         </Stack>
       </Box>
     </Center>

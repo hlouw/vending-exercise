@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Cluster } from "@/components/layout/Cluster";
-import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { setCustomerId } from "@/lib/client/identity";
@@ -14,49 +13,52 @@ export function CustomerBadge() {
 
   // null means "not editing": show the real identity.
   const [draft, setDraft] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
 
   function save() {
-    const result = setCustomerId(draft ?? customerId);
-    if (result.ok) {
-      setDraft(null);
-      setError(null);
-    } else {
-      setError(result.error);
-    }
+    const saved = setCustomerId(draft ?? customerId);
+    setInvalid(!saved);
+    if (saved) setDraft(null);
   }
 
   return (
     <form
+      className="w-full sm:w-auto"
       onSubmit={(event) => {
         event.preventDefault();
         if (draft !== null) save();
       }}
     >
-      <Stack gap="sm">
-        <Cluster gap="sm" align="end">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm">You are</span>
-            <Input
-              value={draft ?? customerId}
-              onChange={(e) => setDraft(e.target.value)}
-              aria-invalid={error !== null}
-              aria-describedby={error ? "customer-id-error" : undefined}
-              spellCheck={false}
-              autoComplete="off"
-              className="w-72 max-w-full font-mono text-sm"
-            />
-          </label>
-          <Button type="submit" variant="coin" disabled={draft === null}>
-            Switch
-          </Button>
-        </Cluster>
-        {error && (
-          <p id="customer-id-error" className="text-sm text-amber-300">
-            {error}
-          </p>
-        )}
-      </Stack>
+      <Cluster gap="sm" align="end" className="flex-nowrap">
+        <label className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
+          {/* The error shares the label's line, so the page never jumps. */}
+          <span className="flex justify-between gap-2 text-xs">
+            <span className="text-muted">You are</span>
+            {invalid && (
+              <span id="customer-id-error" className="text-warning">
+                Use 1–64 letters, numbers, - or _
+              </span>
+            )}
+          </span>
+          <Input
+            value={draft ?? customerId}
+            onChange={(e) => setDraft(e.target.value)}
+            aria-invalid={invalid}
+            aria-describedby={invalid ? "customer-id-error" : undefined}
+            spellCheck={false}
+            autoComplete="off"
+            className="w-full py-1 font-mono text-xs sm:w-72"
+          />
+        </label>
+        <Button
+          type="submit"
+          variant="secondary"
+          size="sm"
+          disabled={draft === null}
+        >
+          Switch
+        </Button>
+      </Cluster>
     </form>
   );
 }
