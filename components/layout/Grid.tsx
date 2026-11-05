@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ElementType } from "react";
 import { cn } from "@/lib/cn";
 
 const grid = cva(
@@ -7,28 +7,39 @@ const grid = cva(
   {
     variants: {
       gap: { sm: "gap-2", md: "gap-4", lg: "gap-6" },
+      /** A fixed number of equal columns, instead of auto-fitting. */
+      columns: { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" },
     },
     defaultVariants: { gap: "md" },
   },
 );
 
-type GridProps = ComponentProps<"div"> &
+type GridProps = Omit<ComponentProps<"div">, "ref"> &
   VariantProps<typeof grid> & {
     /** Smallest a column may be before the grid drops a column, e.g. "9rem". */
     min?: string;
+    /** Render as a list when the children are list items. */
+    as?: "div" | "ul" | "ol";
   };
 
-/** Auto-fitting columns: as many as fit at `min` width, no breakpoints. */
+/**
+ * Auto-fitting columns: as many as fit at `min` width, no breakpoints. Pass
+ * `columns` instead for a fixed number of equal columns, so the layout never
+ * depends on what is inside the cells.
+ */
 export function Grid({
+  as = "div",
   gap,
+  columns,
   min = "10rem",
   className,
   style,
   ...props
 }: GridProps) {
+  const Tag = as as ElementType;
   return (
-    <div
-      className={cn(grid({ gap }), className)}
+    <Tag
+      className={cn(grid({ gap, columns }), className)}
       style={{ "--grid-min": min, ...style } as React.CSSProperties}
       {...props}
     />

@@ -2,6 +2,7 @@ import { Cluster } from "@/components/layout/Cluster";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { cn } from "@/lib/cn";
 import { Display } from "@/components/vending/Display";
 import { formatPence } from "@/lib/format";
 import { MAX_PENCE } from "@/lib/schemas";
@@ -54,17 +55,25 @@ export function PaymentPanel({
             value={amountText}
             onChange={(e) => onAmountTextChange(e.target.value)}
             aria-invalid={invalid}
-            aria-describedby={invalid ? "amount-error" : undefined}
+            aria-describedby={invalid ? "amount-help" : undefined}
             placeholder="0.00"
             autoComplete="off"
           />
         </label>
-        {invalid && (
-          <p id="amount-error" className="text-sm text-amber-300">
-            Enter an amount between £0.01 and {formatPence(MAX_PENCE)}, like
-            1.50.
-          </p>
-        )}
+        {/* One line, always present, so the panels below never jump. */}
+        <p
+          id="amount-help"
+          className={cn(
+            "min-h-5 text-sm",
+            invalid ? "text-amber-300" : "text-machine-trim",
+          )}
+        >
+          {invalid
+            ? `Enter £0.01–${formatPence(MAX_PENCE)}, like 1.50.`
+            : price === null
+              ? "Pick an item to begin."
+              : ""}
+        </p>
 
         <Cluster gap="sm">
           {QUICK_ADD.map((pence) => (
@@ -85,9 +94,6 @@ export function PaymentPanel({
         <Button type="submit" size="xl" disabled={!canBuy}>
           {busy ? "Buying…" : "Buy"}
         </Button>
-        {price === null && (
-          <p className="text-sm text-machine-trim">Pick an item to begin.</p>
-        )}
       </Stack>
     </form>
   );

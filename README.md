@@ -121,7 +121,8 @@ The brief is a self-contained exercise, so storage and identity are deliberately
 
 This was built with Claude Code. The process, in order:
 
-1. **Requirements grilling** before any code: Item catalogue versus free-form price, integer pence, identity, the change algorithm, storage, rate-limit semantics, atomicity, testing and the response shape. The answers became `GLOSSARY.md` and a set of vertical-slice tickets.
+1. **Requirements grilling** before any code: Item catalogue versus free-form price, integer pence, identity, the change algorithm, storage, rate-limit semantics, atomicity, testing and the response shape. The answers became `GLOSSARY.md` and a set of vertical-slice tickets. 
+2. Additional guidance was given to create and use design layout primitives from the start and to use Zod.
 2. **Seven small tickets**, each reviewed and committed separately: tooling, an exact-payment tracer bullet through every layer, change and Refusals, live stock, rate limiting, visual design, and this README.
 3. **Review changed the design.** Examples: body validation moved into the route so `attemptPurchase` only deals with domain logic, the rate limiter moved to the route level, and the brute-force test uses `Math.random()` with the failing inputs in the assertion message.
 
