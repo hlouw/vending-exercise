@@ -1,22 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Grid } from "@/components/layout/Grid";
 import { Stack } from "@/components/layout/Stack";
 import { Button } from "@/components/ui/Button";
 import { CoinTray, type TrayOutcome } from "@/components/vending/CoinTray";
 import { PaymentPanel } from "@/components/vending/PaymentPanel";
-import { postPurchase } from "@/lib/api";
+import { StockPanel } from "@/components/vending/StockPanel";
+import { getStock, postPurchase } from "@/lib/api";
 import { CATALOGUE, type Item } from "@/lib/catalogue";
 import { formatPence, parsePounds } from "@/lib/format";
 import { getCustomerId } from "@/lib/identity";
-import { MAX_PENCE } from "@/lib/schemas";
+import { MAX_PENCE, type StockResponse } from "@/lib/schemas";
 
 export function VendingMachine() {
   const [selected, setSelected] = useState<Item | null>(null);
   const [amountText, setAmountText] = useState("");
   const [outcome, setOutcome] = useState<TrayOutcome | null>(null);
   const [busy, setBusy] = useState(false);
+  const [stock, setStock] = useState<StockResponse | null>(null);
+
+  const refreshStock = useCallback(async () => {
+    try {
+      setStock(await getStock());
+    } catch {
+      // Keep showing the last known stock; the next Purchase retries.
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getStock()
+      .then((initial) => {
+        if (!cancelled) setStock(initial);
+      })
+      .catch(() => {
+        // The next Purchase refreshes it.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const parsed = parsePounds(amountText);
   const amountPaid =
@@ -39,6 +63,8 @@ export function VendingMachine() {
       setOutcome({ kind: "error" });
     } finally {
       setBusy(false);
+      // Whatever the Outcome, the Coin Supply may have changed.
+      void refreshStock();
     }
   }
 
@@ -84,6 +110,8 @@ export function VendingMachine() {
       </Button>
 
       <CoinTray outcome={outcome} />
+
+      <StockPanel stock={stock} />
     </Stack>
   );
 }

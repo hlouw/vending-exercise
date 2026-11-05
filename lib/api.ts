@@ -1,8 +1,10 @@
 import { CUSTOMER_ID_HEADER } from "@/lib/identity-header";
 import {
   PurchaseResponseSchema,
+  StockResponseSchema,
   type PurchaseRequest,
   type PurchaseResponse,
+  type StockResponse,
 } from "@/lib/schemas";
 
 export async function postPurchase(
@@ -19,4 +21,9 @@ export async function postPurchase(
   });
   // Never trust the wire: parse, don't cast.
   return PurchaseResponseSchema.parse(await response.json());
+}
+
+export async function getStock(): Promise<StockResponse> {
+  const response = await fetch("/api/stock", { cache: "no-store" });
+  return StockResponseSchema.parse(await response.json());
 }

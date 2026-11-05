@@ -19,10 +19,10 @@ export const PurchaseRequestSchema = z.strictObject({
 });
 export type PurchaseRequest = z.infer<typeof PurchaseRequestSchema>;
 
-const CoinCountsSchema = z.partialRecord(
-  z.enum(COINS.map(String) as [string, ...string[]]),
-  z.int().nonnegative(),
-);
+const CoinKeySchema = z.enum(COINS.map(String) as [string, ...string[]]);
+
+/** Some of the Coins, e.g. the Change handed back. */
+const CoinCountsSchema = z.partialRecord(CoinKeySchema, z.int().nonnegative());
 
 export const PurchaseResponseSchema = z.discriminatedUnion("status", [
   z.object({
@@ -38,3 +38,9 @@ export const PurchaseResponseSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("unauthorized") }),
 ]);
 export type PurchaseResponse = z.infer<typeof PurchaseResponseSchema>;
+
+export const StockResponseSchema = z.object({
+  /** How many of every Coin the machine still holds for Change. */
+  supply: z.record(CoinKeySchema, z.int().nonnegative()),
+});
+export type StockResponse = z.infer<typeof StockResponseSchema>;

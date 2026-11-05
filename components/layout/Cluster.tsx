@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ElementType } from "react";
 import { cn } from "@/lib/cn";
 
 const cluster = cva("flex flex-wrap", {
@@ -15,18 +15,24 @@ const cluster = cva("flex flex-wrap", {
   defaultVariants: { gap: "md", justify: "start", align: "center" },
 });
 
-type ClusterProps = ComponentProps<"div"> & VariantProps<typeof cluster>;
+type ClusterProps = Omit<ComponentProps<"div">, "ref"> &
+  VariantProps<typeof cluster> & {
+    /** Render as a list when the children are list items. */
+    as?: "div" | "ul" | "ol";
+  };
 
 /** Children sit in a row and wrap when they run out of room. */
 export function Cluster({
+  as = "div",
   gap,
   justify,
   align,
   className,
   ...props
 }: ClusterProps) {
+  const Tag = as as ElementType;
   return (
-    <div
+    <Tag
       className={cn(cluster({ gap, justify, align }), className)}
       {...props}
     />

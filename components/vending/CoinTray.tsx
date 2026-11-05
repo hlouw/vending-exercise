@@ -1,3 +1,4 @@
+import { Cluster } from "@/components/layout/Cluster";
 import { COINS } from "@/lib/domain/coins";
 import type { PurchaseResponse } from "@/lib/schemas";
 import { formatCoin, formatPence } from "@/lib/format";
@@ -44,7 +45,7 @@ function Message({ outcome }: { outcome: TrayOutcome }) {
           ) : (
             <>
               <p>Your change: {formatPence(response.changeTotal)}</p>
-              <ul className="mt-2 flex flex-wrap gap-2">
+              <Cluster as="ul" gap="sm" className="mt-2">
                 {coins.map(({ coin, count }) => (
                   <li
                     key={coin}
@@ -53,7 +54,7 @@ function Message({ outcome }: { outcome: TrayOutcome }) {
                     {count} × {formatCoin(coin)}
                   </li>
                 ))}
-              </ul>
+              </Cluster>
             </>
           )}
         </>
