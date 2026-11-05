@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Cluster } from "@/components/layout/Cluster";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { setCustomerId } from "@/lib/client/identity";
@@ -23,23 +22,15 @@ export function CustomerBadge() {
 
   return (
     <form
-      className="w-full sm:w-auto"
+      className="flex w-full flex-col gap-1 sm:w-auto lg:flex-row-reverse lg:items-center lg:gap-2"
       onSubmit={(event) => {
         event.preventDefault();
         if (draft !== null) save();
       }}
     >
-      <Cluster gap="sm" align="end" className="flex-nowrap">
-        <label className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
-          {/* The error shares the label's line, so the page never jumps. */}
-          <span className="flex justify-between gap-2 text-xs">
-            <span className="text-muted">You are</span>
-            {invalid && (
-              <span id="customer-id-error" className="text-warning">
-                Use 1–64 letters, numbers, - or _
-              </span>
-            )}
-          </span>
+      <div className="flex items-center gap-2">
+        <label className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+          <span className="text-xs whitespace-nowrap text-muted">You are</span>
           <Input
             value={draft ?? customerId}
             onChange={(e) => setDraft(e.target.value)}
@@ -47,7 +38,7 @@ export function CustomerBadge() {
             aria-describedby={invalid ? "customer-id-error" : undefined}
             spellCheck={false}
             autoComplete="off"
-            className="w-full py-1 font-mono text-xs sm:w-72"
+            className="h-8 w-full min-w-0 py-0 font-mono text-xs sm:w-72"
           />
         </label>
         <Button
@@ -55,10 +46,17 @@ export function CustomerBadge() {
           variant="secondary"
           size="sm"
           disabled={draft === null}
+          className="h-8 py-0"
         >
           Switch
         </Button>
-      </Cluster>
+      </div>
+      {/* Beside the input on large screens, so the page does not jump. Below it otherwise. */}
+      {invalid && (
+        <p id="customer-id-error" className="text-xs text-warning">
+          Use 1–64 letters, numbers, - or _
+        </p>
+      )}
     </form>
   );
 }

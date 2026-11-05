@@ -87,7 +87,7 @@ export function VendingMachine() {
     <Center className="py-4">
       <Box tone="body">
         <Stack gap="md">
-          <Cluster justify="between" align="end" gap="sm">
+          <Cluster justify="between" gap="sm">
             <h1 className="text-xl font-semibold">Vending machine</h1>
             <CustomerBadge />
           </Cluster>
