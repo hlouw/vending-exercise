@@ -1,16 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Grid } from "@/components/layout/Grid";
+import { Box } from "@/components/layout/Box";
+import { Center } from "@/components/layout/Center";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Stack } from "@/components/layout/Stack";
-import { Button } from "@/components/ui/Button";
 import { CoinTray, type TrayOutcome } from "@/components/vending/CoinTray";
 import { CustomerBadge } from "@/components/vending/CustomerBadge";
+import { ItemGrid } from "@/components/vending/ItemGrid";
 import { PaymentPanel } from "@/components/vending/PaymentPanel";
 import { StockPanel } from "@/components/vending/StockPanel";
 import { getStock, postPurchase } from "@/lib/api";
-import { CATALOGUE, type Item } from "@/lib/catalogue";
-import { formatPence, parsePounds } from "@/lib/format";
+import type { Item } from "@/lib/catalogue";
+import { parsePounds } from "@/lib/format";
 import { getCustomerId } from "@/lib/identity";
 import { MAX_PENCE, type StockResponse } from "@/lib/schemas";
 
@@ -70,51 +72,57 @@ export function VendingMachine() {
   }
 
   return (
-    <Stack gap="lg" className="mx-auto w-full max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">Vending machine</h1>
+    <Center className="py-6">
+      <Box tone="body" padding="lg">
+        <Stack gap="lg">
+          <header>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Vending machine
+            </h1>
+            <p className="text-machine-trim">
+              Pick an item, pay, and get your change.
+            </p>
+          </header>
 
-      <Grid min="9rem">
-        {CATALOGUE.map((item) => (
-          <Button
-            key={item.id}
-            variant="item"
-            size="lg"
-            selected={selected?.id === item.id}
-            onClick={() => {
-              setSelected(item);
-              setOutcome(null);
-            }}
-          >
-            <Stack gap="sm">
-              <span>{item.name}</span>
-              <span className="text-sm text-zinc-500">
-                {formatPence(item.price)}
-              </span>
+          <Sidebar sidebarWidth="19rem">
+            <Box tone="glass" padding="lg">
+              <ItemGrid
+                selectedId={selected?.id ?? null}
+                onSelect={(item) => {
+                  setSelected(item);
+                  setOutcome(null);
+                }}
+              />
+            </Box>
+            <Stack gap="md">
+              <Box tone="panel">
+                <PaymentPanel
+                  price={selected?.price ?? null}
+                  amountText={amountText}
+                  amountPaid={amountPaid}
+                  canBuy={canBuy}
+                  busy={busy}
+                  onAmountTextChange={setAmountText}
+                  onQuickAdd={(pence) =>
+                    setAmountText(((parsed ?? 0) + pence) / 100 + "")
+                  }
+                  onClear={() => setAmountText("")}
+                  onBuy={buy}
+                />
+              </Box>
+              <Box tone="panel">
+                <StockPanel stock={stock} />
+              </Box>
             </Stack>
-          </Button>
-        ))}
-      </Grid>
+          </Sidebar>
 
-      <PaymentPanel
-        price={selected?.price ?? null}
-        amountText={amountText}
-        amountPaid={amountPaid}
-        onAmountTextChange={setAmountText}
-        onQuickAdd={(pence) =>
-          setAmountText(((parsed ?? 0) + pence) / 100 + "")
-        }
-        onClear={() => setAmountText("")}
-      />
+          <CoinTray outcome={outcome} />
 
-      <Button onClick={buy} disabled={!canBuy}>
-        {busy ? "Buying…" : "Buy"}
-      </Button>
-
-      <CoinTray outcome={outcome} />
-
-      <StockPanel stock={stock} />
-
-      <CustomerBadge />
-    </Stack>
+          <Box tone="panel">
+            <CustomerBadge />
+          </Box>
+        </Stack>
+      </Box>
+    </Center>
   );
 }

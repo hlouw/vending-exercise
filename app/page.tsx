@@ -2,7 +2,7 @@ import { VendingMachine } from "@/components/vending/VendingMachine";
 
 export default function Home() {
   return (
-    <main className="flex flex-1 items-center">
+    <main className="flex-1">
       <VendingMachine />
     </main>
   );
